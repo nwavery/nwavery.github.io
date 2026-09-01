@@ -57,13 +57,15 @@
 
   <p>Plenty of systems can't pay that. A single-maintainer package doesn't get a witness network. Neither does a fleet of embedded devices checking firmware manifests, or an intermittently connected client, or any single-organization log where "independent witness" was always a polite fiction.</p>
 
-  <h2>Floors, never votes</h2>
+  <h2>Freshness floors</h2>
 
   <p>Ask more than one host how far the log goes. Take the highest answer anyone gives.</p>
 
   <p>Not the majority answer. That distinction is the whole thing. Ask five hosts and believe the majority, and three that cooperate can outvote the one honest host holding the newest entries. History disappears by consensus.</p>
 
   <p>Taking the maximum inverts it. Every quantity in an append-only log is monotone, so the largest value you've seen is a lower bound on the truth. It needs no trust at all. One honest host sets the floor and no number of quiet ones can lower it.</p>
+
+  <p>I call this <strong>freshness floors</strong>. Floors, never votes.</p>
 
   <p>Three layers, in practice.</p>
 

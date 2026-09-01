@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your tamper-evident log doesn't detect omission</title>
+<meta name="description" content="Hash chaining catches alteration. It is structurally blind to a server that hands you a perfectly valid prefix and stops.">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../../index.html">&larr; nathan avery</a>
+
+  <h1>Your tamper-evident log doesn't detect omission</h1>
+  <p class="meta">August 2026</p>
+
+  <p>A provider hands an auditor the log. Every record is genuine. Every hash chains to the one before it. Every signature verifies. The auditor checks all of it and finds nothing wrong.</p>
+
+  <p>The log stops three weeks early.</p>
+
+  <p>Nothing in that chain can tell you it happened. There's no record of the records that were never sent. Absence has no signature, so there's nothing to check it against.</p>
+
+  <p>These are two different attacks. They usually get sold as one.</p>
+
+  <h2>Modification and omission</h2>
+
+  <p>Tamper-evidence means a committed record can't be altered without the alteration becoming visible. Hash chaining gives you that. It works.</p>
+
+  <p>The vendors describe it accurately. It doesn't prevent modification. It makes modification visible.</p>
+
+  <p>Omission doesn't alter anything. The server hands you a true, complete, internally consistent prefix and stops. Every check passes, because everything you got is real. The problem is what you didn't get.</p>
+
+  <p>Hash chaining can't see that. It verifies relationships between records you hold. It says nothing about records you don't.</p>
+
+  <h2>Where it bites</h2>
+
+  <p>Look for any system where a later record cancels an earlier one.</p>
+
+  <p>Someone's phone gets stolen, so they revoke it by publishing a new record. Someone takes back a statement, so they publish a retraction. Both corrections arrive after the thing they correct. A server that stops the story early keeps the thief authorized and the retraction unsaid, and every signature still checks out.</p>
+
+  <p>Audit trails have the same shape for a duller reason. The entries under investigation are the recent ones. A log served to an examiner is least useful exactly where it's easiest to truncate.</p>
+
+  <p>Notice what the audit log category means by "completeness." It means did the system capture the event. That's a question about your own instrumentation. It doesn't mean is the party serving me this log holding some of it back. I haven't found a product that asks that one.</p>
+
+  <h2>What the field does</h2>
+
+  <p>Transparency logs converged on witnesses.</p>
+
+  <p>In the <a href="https://c2sp.org/tlog-witness">C2SP tlog-witness protocol</a>, independent witnesses cosign a checkpoint only after verifying a consistency proof against the last one they signed. A <a href="https://c2sp.org/tlog-policy">trust policy</a> defines the quorum. A log showing two different histories can't get both cosigned by the same witness.</p>
+
+  <p><a href="https://engineering.fb.com/2023/04/13/security/whatsapp-key-transparency/">WhatsApp</a> does the same thing differently. They ship an AKD library so third parties can audit their key directory.</p>
+
+  <p>Both work. Both are right at the scale they run at.</p>
+
+  <p>Look at what they cost to deploy. You need independent operators who'll actually run a witness. You need a published trust policy. You need everyone to agree on the quorum. That's organizational work, and it's harder than the cryptography.</p>
+
+  <p>Plenty of systems can't pay that. A single-maintainer package doesn't get a witness network. Neither does a fleet of embedded devices checking firmware manifests, or an intermittently connected client, or any single-organization log where "independent witness" was always a polite fiction.</p>
+
+  <h2>Floors, never votes</h2>
+
+  <p>Ask more than one host how far the log goes. Take the highest answer anyone gives.</p>
+
+  <p>Not the majority answer. That distinction is the whole thing. Ask five hosts and believe the majority, and three that cooperate can outvote the one honest host holding the newest entries. History disappears by consensus.</p>
+
+  <p>Taking the maximum inverts it. Every quantity in an append-only log is monotone, so the largest value you've seen is a lower bound on the truth. It needs no trust at all. One honest host sets the floor and no number of quiet ones can lower it.</p>
+
+  <p>Three layers, in practice.</p>
+
+  <p>A signed checkpoint makes absence detectable on its own. The account states, under its own key, that its log reached sequence N and this root covers the whole prefix. A host serving less than N isn't quiet anymore. It's contradicting the account.</p>
+
+  <p>A ratchet closes the gap between encounters. The highest version and highest checkpoint sequence you've ever seen become a floor a later exchange can't lower. "There is none" becomes a refusal instead of an answer.</p>
+
+  <p>The floor across sources handles a first encounter. It's the only case the other two can't reach.</p>
+
+  <p>One trap, because I got it wrong the first time. A floor raised by an unverified claim must never decide eligibility. A hostile host answers with an absurd sequence number, the floor goes above anything honest, and a client that then refuses every host below the floor has handed a denial of service to anyone who can get one entry into a host list. So the ranking orders hosts. It never filters them. Lying buys one wasted round trip.</p>
+
+  <h2>Where it stops working</h2>
+
+  <p>It doesn't survive isolation. I'd rather say that here than have someone find it.</p>
+
+  <p>All of the above holds against a colluding adversary. No number of quiet hosts can lower a floor one honest host set. It doesn't hold against an attacker who controls every host a client can reach. The honest answer never arrives. There's no maximum to take.</p>
+
+  <p>The three layers fail unevenly, and one survives. The signed checkpoint is local verification against something the account wrote itself, so it holds even when every host is hostile. The ratchet only protects continuity from a moment of first honest contact, so a client whose first view is the attacker's has nothing to ratchet against. The floor across sources needs a second reachable host, which is what isolation denies.</p>
+
+  <p>This isn't peculiar to my design. Every deployed defence against this attack reintroduces one of the two things I was avoiding: globally trusted auditors, or Byzantine consensus. The gossip literature is candid about the same wall. Taking the maximum is a third option. It buys resistance to collusion, not resistance to isolation.</p>
+
+  <p>That's the trade. A weaker guarantee, and it costs nothing to deploy.</p>
+
+  <h2>The point</h2>
+
+  <p><a href="https://datatracker.ietf.org/doc/html/rfc6962">Certificate Transparency</a> is the most widely deployed verifiable log there is. Its append-only Merkle log shipped. Its split-view defences didn't, and the reason was adoption economics and a conflict between auditing and privacy, not missing cryptography.</p>
+
+  <p>So the second question is the one the field hasn't closed. Not is this record real. Signatures answer that well. Is this all of them.</p>
+
+  <p>If you're shipping a tamper-evident log, know which of the two you bought. Tamper-evidence tells you the records you have are genuine. It never claimed to tell you how many there should be.</p>
+
+  <footer>
+    <a href="../../index.html">nathan avery</a> ·
+    <a href="https://github.com/nwavery">github</a>
+  </footer>
+
+</div>
+</body>
+</html>

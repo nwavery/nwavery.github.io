@@ -141,3 +141,11 @@ footer {
   color: var(--faint);
   line-height: 1.8;
 }
+
+.deck {
+  font-size: var(--step-1);
+  line-height: 1.42;
+  color: var(--muted);
+  margin: 0 0 14px;
+  text-wrap: balance;
+}

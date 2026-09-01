@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Your tamper-evident log doesn't detect omission</title>
-<meta name="description" content="Hash chaining catches alteration. It is structurally blind to a server that hands you a perfectly valid prefix and stops.">
+<meta name="description" content="Freshness floors: catching a truncated log without witnesses, auditors, or a quorum. Hash chaining catches alteration and is structurally blind to a server that hands you a perfectly valid prefix and stops.">
 <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
@@ -13,6 +13,7 @@
   <a class="back" href="../../index.html">&larr; nathan avery</a>
 
   <h1>Your tamper-evident log doesn't detect omission</h1>
+  <p class="deck">Freshness floors: catching a truncated log without witnesses, auditors, or a quorum.</p>
   <p class="meta">August 2026</p>
 
   <p>A provider hands an auditor the log. Every record is genuine. Every hash chains to the one before it. Every signature verifies. The auditor checks all of it and finds nothing wrong.</p>

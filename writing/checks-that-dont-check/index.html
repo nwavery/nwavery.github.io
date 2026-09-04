@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your green build doesn't prove the fix is still there</title>
+<meta name="description" content="Assert the use, never the declaration. I put forty-two fixed defects back into the tree and re-ran the checks that certified them closed. Thirty-three stayed green.">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../../index.html">&larr; nathan avery</a>
+
+  <h1>Your green build doesn't prove the fix is still there</h1>
+  <p class="deck">Assert the use, never the declaration. I put forty-two fixed defects back into the tree, and thirty-three of the checks certifying them closed stayed green.</p>
+  <p class="meta">September 2026</p>
+
+  <p>I have a script whose only job is to assert that every finding from a security review is actually closed. Not closed according to a spreadsheet. Closed according to a property of the source tree that is false while the defect is present and true once it is gone.</p>
+
+  <p>It reported 48 of 48.</p>
+
+  <p>That number is worth exactly as much as the checks behind it, and I had never tested the checks. A passing check tells you it passed. It does not tell you it would have failed.</p>
+
+  <p>So I went and found out. For each closed finding I put the original defect back into the tree and re-ran the script.</p>
+
+  <p><strong>Thirty-three of forty-two entries stayed green with the defect back in place.</strong></p>
+
+  <p>That is not a slip in a few entries. That is most of the gate.</p>
+
+  <h2>What it did not notice</h2>
+
+  <p>A hash function computing the wrong version. An empty screener set admitting everything. A veto window deleted so account recovery executes instantly. A bounds check bypassed at both of its call sites. Private content relaying again. An enum variant renamed back to the name the finding was written about.</p>
+
+  <p>Every one of those is a real defect that had been found, fixed, and then certified as fixed by a check that was not looking at it.</p>
+
+  <h2>Four ways a check can be true while the bug is present</h2>
+
+  <p>I knew about three. The script's own header listed them, because it had shipped all three at once.</p>
+
+  <p><strong>Wrong artefact.</strong> The defect lived in a documentation file and the entry asserted something about a source file. Nine entries did this. A check reads the file the finding names, or it is measuring something else.</p>
+
+  <p><strong>A needle that occurs anyway.</strong> Asserting that the string <code>device_id</code> appears in a document is true eleven times over for unrelated reasons. Delete the entire schema the finding is about and the check still passes.</p>
+
+  <p><strong>A comment instead of the code.</strong> A comment reading <code>NOT with_capacity(seq)</code> survives the exact reversion it describes. So does a symbol named after the bug. Asserting that <code>HeadBehindConfirmed</code> appears asserts that the defect is present, not that it is gone.</p>
+
+  <p>The fourth is the one the audit found, and it accounted for fifteen of the thirty-three.</p>
+
+  <p><strong>A declaration, where the defect lives in the use.</strong></p>
+
+  <p>An enum variant declared while the arm that returns it is deleted. A struct field and its accessors surviving while the line that populates it goes. A function whose own body satisfies the check while both call sites stop calling it. A heading matching while the paragraph under it is gutted. A value still computed while nothing consumes it.</p>
+
+  <p>And the one I would put on a poster: a test whose <em>name</em> still matched, while its body had been replaced with <code>if true { return; }</code>.</p>
+
+  <p>Assert the use, never the declaration.</p>
+
+  <h2>This is not really a testing problem</h2>
+
+  <p>The shape generalizes well past test suites, which is why it seemed worth writing down.</p>
+
+  <p>Anything that certifies something else has this failure mode. A compliance check that greps for the existence of a policy file. A lint rule that fires on a pattern the real bug does not happen to use. A dashboard panel that goes green because the query returned rows. A deploy gate that confirms the service is listening. Each one measures a proxy for the property it cares about, and the proxy and the property agree right up until the moment they stop.</p>
+
+  <p>The tell is which direction the assertion runs. A check that confirms the good state is a claim that can quietly stop being true, because the thing that made it true has moved. A check written to fail when the bad state appears has to go and find the bad state. Only one of those two survives a refactor with its meaning intact.</p>
+
+  <h2>The part where I was wrong</h2>
+
+  <p>The audit flagged three checks that run before a signature is verified, against a module header saying that nothing is reported about attacker-controlled fields until the signature has been checked.</p>
+
+  <p>The code was right and the header was wrong. The conformance vector says so in its own note: the size bound is checked before the signature because it needs no key. The header forbade the thing the vectors require. A second implementation written from that prose would return a signature error where this one returns a size error, which is the precise disagreement that module exists to prevent.</p>
+
+  <p>So I fixed the header.</p>
+
+  <p>An audit that only ever confirms your suspicions is running the same failure as the gate it was sent to audit.</p>
+
+  <h2>What it cost</h2>
+
+  <p>Every closure resting only on that gate was unverified for as long as it stood, which is the whole period it was reporting a clean sweep. The findings that had been checked by hand against a property that fails when the fix is reverted still stand. Nothing else did.</p>
+
+  <p>Thirty of the thirty-three are repaired now. Each was verified by putting back the exact defect the audit demonstrated surviving, confirming the check fails on it, and confirming it passes without it. Three are not repaired, and they are named with their reasons rather than quietly counted as done.</p>
+
+  <p>Thirty-nine of forty-two sound is a worse headline than forty-eight of forty-eight. It is also the first of the two that was ever true.</p>
+
+  <h2>The point</h2>
+
+  <p>The best sentence in that script is one it says about itself:</p>
+
+  <blockquote>A rule this file states about itself is worth no more than a rule it states about the tree, and the only way to tell is to reintroduce the defect and look.</blockquote>
+
+  <p>It earned that line the hard way. The header had recorded its own wrong-artefact rule as fixed, and two violations of it were live when somebody finally went and measured.</p>
+
+  <p>If you have a check standing between you and a class of bug, you already know it passes. Go and find out whether it fails.</p>
+
+  <footer>
+    Nathan Avery &middot; <a href="../../index.html">nwavery.github.io</a>
+  </footer>
+
+</div>
+</body>
+</html>

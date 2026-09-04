@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your rate limiter has a free channel and it is the one an attacker uses</title>
+<meta name="description" content="A meter that only charges well-formed input leaves the malformed path free. One byte short of a declared length and the charge never happens at all.">
+<link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../../index.html">&larr; nathan avery</a>
+
+  <h1>Your rate limiter has a free channel and it is the one an attacker uses</h1>
+  <p class="deck">A meter that only charges well-formed input leaves the malformed path free. Malformed is what an attacker sends.</p>
+  <p class="meta">September 2026</p>
+
+  <p>I built a control channel with a byte budget on it. Sixty-four kilobytes per session, generous for the handful of small messages the protocol actually sends, and nowhere near enough to carry a video segment. The budget is what turns "control plane only" from a promise into a property.</p>
+
+  <p>Every message on the wire starts with a four-byte length prefix, then that many bytes of message. Read the prefix, read exactly that many bytes, hand back a frame, charge its size against the budget. Refuse the connection once the budget is spent.</p>
+
+  <p>Declare a length of 4,096 bytes and deliver 4,095, then close the stream. The read fails. There is no frame. There is nothing to charge.</p>
+
+  <h2>The meter only sees what it can parse</h2>
+
+  <p>Open a fresh stream and do it again. Every attempt costs the node an accepted connection, a stream slot, a task wakeup, and whatever bytes the sender actually put on the wire. None of that touches the budget, because the budget is measured off a decoded frame, and a frame that arrives one byte short never gets decoded.</p>
+
+  <p>In the test that found it, one session pushed 963,265 bytes through the node this way. That is a 0.94 megabyte video segment, delivered over a channel whose entire declared purpose was to never carry one, on a budget that should have stopped it at 65,536 bytes.</p>
+
+  <p>The accounting rule was charge what arrived. The bug is that what arrived, when a read fails partway through, is nothing the code can see.</p>
+
+  <h2>The fix is a change of what gets charged</h2>
+
+  <p>Charge the declared length, not the delivered one. A sender that says a frame is 4,096 bytes owes 4,096 bytes whether or not the read actually completes. This is the correct direction for the same reason a shipping label is billed by the box's stated weight and not by however much survives to the far end.</p>
+
+  <p>There is a second half to this, and it runs the other way. A frame can also declare less than it delivers, a length of 4 kilobytes on a stream that actually carries a megabyte. Charging the declared length alone leaves that path uncharged too, and it is the cheaper attack of the two because a stream that gets reset mid-read cannot even be measured after the fact. That side isn't fixed by changing what you charge. It's fixed by refusing to receive more than was declared in the first place, at the transport layer, so the excess never has a chance to arrive.</p>
+
+  <p>Two failures, same shape, opposite directions. Charge what was promised. Never receive more than was promised. Do only one and the other one is the free channel.</p>
+
+  <h2>The part I'd point at first</h2>
+
+  <p>The regression test for this doesn't replay the bytes that found the bug. It states the rule directly, drives real frames at the real code path, and asserts the rule holds: a session cannot pass a video segment through a channel with no room for one. The comment above it says why, almost verbatim from something I wrote about a different bug a few days ago: the test is written from the rule the system documents, not from the reproduction that happened to trigger it.</p>
+
+  <p>A test built from a specific reproduction proves that one input is handled. A test built from the rule proves the rule, which is the only version that still means something after somebody changes the code around it.</p>
+
+  <h2>Where else this shows up</h2>
+
+  <p>Any system that charges, limits, or bills based on a value it parses out of untrusted input has this shape available to it. A request logger that only logs requests it successfully parsed. A quota system that decrements on a completed unit of work. A cost estimator that prices well-formed queries and has no answer for a malformed one. In every case, the question worth asking is not "what do I charge for this input," it's "what happens on the input I never learn how to charge for at all."</p>
+
+  <p>The failed path is priced last, if it's priced at all, because it's the path nobody is thinking about when the accounting gets written. It's also the only path an attacker has any reason to use.</p>
+
+  <footer>
+    Nathan Avery &middot; <a href="../../index.html">nwavery.github.io</a>
+  </footer>
+
+</div>
+</body>
+</html>

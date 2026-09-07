@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .ground { fill: #0E1115; }
+    .mark   { fill: #D6A44A; }
+    @media (prefers-color-scheme: light) {
+      .ground { fill: #F4F5F7; }
+      .mark   { fill: #9C6C1B; }
+    }
+  </style>
+  <rect class="ground" width="32" height="32"/>
+  <text class="mark" x="16" y="22.5" text-anchor="middle"
+        font-family="ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
+        font-size="15" font-weight="600" letter-spacing="-0.5">NA</text>
+</svg>

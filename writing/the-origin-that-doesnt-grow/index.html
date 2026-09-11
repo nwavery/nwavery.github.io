@@ -41,15 +41,15 @@
 
   <h2>What the origin actually sends</h2>
 
-  <p>At one hundred thousand viewers pulling a stream, the origin sends eight copies of each segment: sixteen megabits a second. Not one hundred thousand copies. Not a thousand.</p>
+  <p>At one hundred thousand viewers pulling a stream, the origin sends eight copies of each segment, a few seconds of video: sixteen megabits a second. Not one hundred thousand copies. Not a thousand.</p>
 
-  <p>Below about four thousand viewers, that number climbs on its own. A hundred viewers costs the origin 1.19 sends a segment, a thousand costs 3.61, because a viewer that hears about a new segment from another viewer waits three seconds for the swarm to deliver it before asking the origin at all. Past four thousand viewers, a ceiling takes over: eight sends a segment, and no more, however much larger the crowd gets.</p>
+  <p>Below about four thousand viewers, that number climbs on its own. A hundred viewers costs the origin 1.19 sends per segment, a thousand costs 3.61, because a viewer that hears about a new segment from another viewer waits three seconds for the other viewers to deliver it before asking the origin at all. Past four thousand viewers, a ceiling takes over: eight sends per segment, and no more, however much larger the crowd gets.</p>
 
-  <p>Carry the stream out to two million viewers and the origin still sends exactly eight copies a segment, the same sixteen megabits it was sending at four thousand. The one-copy-per-viewer version Twitch runs would need four terabits a second at that size. About two hundred and fifty thousand times more.</p>
+  <p>Carry the stream out to two million viewers and the origin still sends exactly eight copies per segment, the same sixteen megabits it was sending at four thousand. The one-copy-per-viewer version Twitch runs would need four terabits a second at that size. About two hundred and fifty thousand times more.</p>
 
   <h2>What sets it apart</h2>
 
-  <p>Every live platform at real scale hits the same wall: one server can't send a copy to every viewer once the audience gets big, so you either build a CDN sized to your peak or find another way to move the bytes. Herald's bet is that the audience already is the delivery network, and past a few thousand viewers its origin's bill stops moving at all: sixteen megabits, whether four thousand people are watching or two million.</p>
+  <p>Every live platform at real scale hits the same wall: one server can't send a copy to every viewer once the audience gets big, so you either build a server network, a CDN, sized to your peak or find another way to move the bytes. Herald's bet is that the audience already is the delivery network: past a few thousand viewers, the origin's bill stops moving at all, so growing from a few thousand viewers to millions costs nothing extra in servers.</p>
 
   <footer>
     Nathan Avery &middot; <a href="../../index.html">nwavery.github.io</a>

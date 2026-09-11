@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your rendezvous node doesn't have to be the one every viewer asks</title>
+<meta name="description" content="An introduction doesn't have to come from the same machine every time. I stopped the node that introduced every viewer to every other one, and the next twenty-eight joined without it.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="stylesheet" href="../../style.css">
+<style>
+  .visual { margin: 28px 0; }
+  .visual video {
+    width: 100%; height: auto; display: block;
+    background: #0E1115; border-radius: 4px; border: 1px solid var(--line);
+  }
+  .visual .cap {
+    font-family: var(--mono); font-size: var(--step--1); color: var(--faint);
+    letter-spacing: 0.02em; margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../../index.html">&larr; nathan avery</a>
+
+  <h1>Your rendezvous node doesn't have to be the one every viewer asks</h1>
+  <p class="deck">An introduction doesn't have to come from the same machine every time. I stopped the node that introduced every viewer to every other one, and the next twenty-eight joined without it.</p>
+  <p class="meta">September 2026</p>
+
+  <p>A viewer joining a live stream needs one thing before it needs any video: to be told where the other viewers are. The first version of that had one machine doing it. A joiner asked, it answered with a handful of addresses, and the joiner went and found them. It works, and it has a single machine's name on it.</p>
+
+  <p>I stopped that machine in the middle of a growing stream.</p>
+
+  <div class="visual">
+    <video src="live-scaling.mp4" width="1200" height="1200" controls autoplay muted loop playsinline></video>
+    <p class="cap">The rendezvous node stops at twelve viewers. Everyone after that finds the swarm through another viewer instead.</p>
+  </div>
+
+  <h2>It kept working</h2>
+
+  <p>The test doesn't just remove the node from the config and assume the rest follows. It stops the process, then dials it, to prove the address is actually dead before it lets anything depend on that being true. Only then does a new viewer join, knowing nothing but the origin's address and one other viewer's. It joins. A second viewer joins from that one.</p>
+
+  <p>The scale version grows a stream one viewer at a time to forty, stopping the node at twelve. Every viewer after that, all twenty-eight of them, joined with no rendezvous address at all. Not a fallback address. None. They found the swarm through another viewer instead, and by the end the mesh they'd built averaged 7.8 connections apiece out of a possible 8.</p>
+
+  <h2>The node's job doesn't require the node</h2>
+
+  <p>What the rendezvous node did was answer one question: who else is here. That answer doesn't have to come from a fixed machine. Any viewer that has already joined can answer it too, with up to eight addresses of its own, and relay the introduction so the newcomer gets admitted. The moment a viewer opens the stream, it becomes able to do the thing that used to require a dedicated server.</p>
+
+  <p>That's the actual shift. A joining rate used to arrive at one machine, so it was proportional to how fast the audience grew. Now the number of things that can answer a join is the audience, so it grows exactly as fast as the demand does. There's no size where the mechanism runs out, because it was never sized to a machine in the first place.</p>
+
+  <h2>The same question shows up again, at a different layer</h2>
+
+  <p>Introducing a viewer to the swarm isn't the only thing that used to go through one machine. Once joined, a viewer asks every few seconds whether there's anything new to watch, and that ask rate is proportional to the audience no matter how well the video itself is being shared peer to peer. At two million viewers that's several hundred thousand asks a second, and it's a different job from serving bytes, but it's still one machine's job if there's only one of it.</p>
+
+  <p>The fix the model uses is the same shape as the join fix: don't make one machine answer for everyone. A coordination node caches the answer and serves it for a slice of the audience, and the fleet grows with the crowd instead of one node absorbing all of it. I'd rather say plainly what's actually behind that number: it's measured cleanly up to 64 viewers, and modeled past that. Nothing has run a swarm of a thousand real viewers yet, let alone two million, so the request-fleet math is the design's answer, not yet something the rig has watched happen.</p>
+
+  <h2>The part I'd point at first</h2>
+
+  <p>Not the numbers. The dial. It would have been easy to write the shutdown test as "remove the node's address from the config, then join a viewer" and call it proof the node isn't needed. That proves the code path was never exercised, not that the swarm would survive the machine actually being gone. Stopping the process and dialing it first is the difference between a test that asserts the node is absent and a test that merely never mentioned it.</p>
+
+  <h2>Where else this shows up</h2>
+
+  <p>Any system with one thing that has to answer once per participant has this shape latent in it: a health check, a presence list, a cache invalidation, a "what changed" poll. The instinct when that one thing gets slow is to make it faster. The fix that actually removes the ceiling is different: stop making it one thing. Let whoever already has the answer give it to the next arrival, or split the job across as many machines as there are people asking. Either way, the count of things that can answer becomes the count of things asking, and a ceiling that scaled with your audience stops being a ceiling at all.</p>
+
+  <footer>
+    Nathan Avery &middot; <a href="../../index.html">nwavery.github.io</a>
+  </footer>
+
+</div>
+</body>
+</html>

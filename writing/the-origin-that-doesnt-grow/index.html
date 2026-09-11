@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your origin doesn't get busier as your audience grows to millions</title>
+<meta name="description" content="Centralized live video sends every viewer their own copy from a server you pay for, so cost tracks the audience exactly. Herald's real numbers don't: sixty four real viewers already got 97% of the stream from each other.">
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="stylesheet" href="../../style.css">
+<style>
+  .visual { margin: 28px 0; }
+  .visual video {
+    width: 100%; height: auto; display: block;
+    background: #0E1115; border-radius: 4px; border: 1px solid var(--line);
+  }
+  .visual .cap {
+    font-family: var(--mono); font-size: var(--step--1); color: var(--faint);
+    letter-spacing: 0.02em; margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="../../index.html">&larr; nathan avery</a>
+
+  <h1>Your origin doesn't get busier as your audience grows to millions</h1>
+  <p class="deck">Centralized live video sends every viewer their own copy from a server you pay for, so cost tracks the audience exactly. Herald's real numbers don't: sixty four real viewers on the real network already got 97% of the stream from each other.</p>
+  <p class="meta">September 2026</p>
+
+  <p>Twitch and YouTube send live video from a server farm sized to the audience, because every viewer gets their own copy of every second. Grow from a thousand viewers to two million and you need two thousand times the bandwidth, because the origin is the only thing sending.</p>
+
+  <p>Herald's viewers send to each other instead. The video below grows one from a handful of viewers to two million and shows exactly what the origin sends the whole time.</p>
+
+  <div class="visual">
+    <video src="live-scaling.mp4" width="1200" height="1200" controls autoplay muted loop playsinline></video>
+    <p class="cap">Measured to sixty four viewers, modeled and labeled as modeled past it. The eyebrow in the corner says which.</p>
+  </div>
+
+  <h2>What's real in it</h2>
+
+  <p>On the real network, over real QUIC, sixty four viewers pull a stream and the origin sends 1.72 copies of each segment, not sixty four. That's 97% of the audience already served by someone else watching, and it's not a simulation: it's the CI arm, run twice, agreeing to two decimals with what the model predicts for that same audience.</p>
+
+  <p>Past what's been run for real, a five-seed model carries the pattern forward. A viewer that hears about a new segment from another viewer waits three seconds for the swarm to deliver it before asking the origin at all, because a segment a neighbor already has is one the swarm probably already has too. At twenty thousand simulated viewers that turns 130 origin sends a segment into 26: a 0.13% share of the audience.</p>
+
+  <p>Carrying that share out to two million, the cautious direction since it was still improving where the real runs stop, puts the origin at about 2,600 sends a segment: five gigabits, not the four terabits a naive, one-copy-per-viewer version would need at that size. Roughly seven hundred times less, from a curve that's measured to sixty four viewers and modeled, and labeled as modeled, past it.</p>
+
+  <h2>The flat line at the end</h2>
+
+  <p>The video also shows a harder ceiling near the end: the origin pinned at exactly eight sends a segment, sixteen megabits, no matter how much larger the audience gets. That's real code and it's off by default. The one time it was measured directly, at 256 viewers, tail latency got six times worse and over sixteen hundred viewers stalled. So that flat line is what the design can offer an operator who wants it, not what a stream does today, and the video's own label says so every time it's on screen.</p>
+
+  <h2>What sets it apart</h2>
+
+  <p>Every live platform at real scale hits the same wall: one server can't send a copy to every viewer once the audience gets big, so you either build a CDN sized to your peak or find another way to move the bytes. Herald's bet is that the audience already is the delivery network. The measurements so far, real to sixty four viewers and modeled past it, say the bet is paying off.</p>
+
+  <footer>
+    Nathan Avery &middot; <a href="../../index.html">nwavery.github.io</a>
+  </footer>
+
+</div>
+</body>
+</html>
